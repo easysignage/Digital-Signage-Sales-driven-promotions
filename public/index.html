@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales-driven promotions</title>
+<style>
+  :root {
+    --bg: #0f1218; --panel: #171b23; --line: #262c38; --text: #e8ebf1; --muted: #8b93a5;
+    --accent: #4f8cff; --on: #22c55e; --off: #64748b; --warn: #f59e0b; --err: #ef4444;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, Segoe UI, sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 18px 24px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--off); margin-left: auto; }
+  header .dot.live { background: var(--on); }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 16px; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .sales { font-size: 88px; font-weight: 700; line-height: 1; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+  .sales.above { color: var(--on); } .sales.below { color: var(--text); }
+  .threshold { color: var(--muted); }
+  svg.spark { width: 100%; height: 110px; margin: 14px 0 6px; display: block; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  button, input { font: inherit; border-radius: 8px; border: 1px solid var(--line); background: #1f2430; color: var(--text); padding: 10px 16px; }
+  button { cursor: pointer; font-weight: 600; }
+  button:hover { border-color: #3a4252; }
+  button:disabled { opacity: .5; cursor: default; }
+  button.drop { background: #3b1d1d; border-color: #5b2626; }
+  button.up { background: #173322; border-color: #1f5133; }
+  button.on { background: var(--accent); border-color: var(--accent); }
+  input { width: 120px; font-variant-numeric: tabular-nums; }
+  .promo { display: flex; align-items: center; gap: 16px; margin-top: 20px; padding: 18px; border-radius: 10px; background: #12161d; border: 1px solid var(--line); }
+  .badge { font-size: 22px; font-weight: 800; padding: 10px 18px; border-radius: 8px; background: var(--off); color: #fff; letter-spacing: .04em; }
+  .badge.on { background: var(--on); } .badge.unknown { background: #334155; }
+  .promo .meta { color: var(--muted); font-size: 13px; }
+  .busy { color: var(--accent); font-size: 13px; visibility: hidden; } .busy.show { visibility: visible; }
+  .log { height: calc(100vh - 170px); min-height: 420px; overflow-y: auto; font-family: var(--mono); font-size: 13px; }
+  .entry { padding: 9px 2px; border-bottom: 1px solid var(--line); }
+  .entry .t { color: var(--muted); margin-right: 8px; }
+  .entry .call { color: #9cc2ff; font-weight: 600; }
+  .entry.warn .msg { color: var(--warn); } .entry.error .msg, .entry.error .call { color: var(--err); }
+  .entry.info .msg { color: var(--muted); font-family: system-ui, sans-serif; }
+  .entry .req { color: #a7b0c2; margin-left: 18px; }
+  .entry .res { color: #6f7a8f; margin-left: 18px; white-space: pre-wrap; word-break: break-all; }
+  .entry .ms { color: var(--muted); }
+  .err-toast { color: var(--err); font-size: 13px; min-height: 18px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sales-driven promotions</h1>
+  <span class="sub">EasySignage Open API demo</span>
+  <span class="dot" id="live" title="Connection to the local server"></span>
+</header>
+<main>
+  <section class="panel">
+    <div class="label">Sales this hour</div>
+    <div class="sales" id="sales">–</div>
+    <div class="threshold">Threshold <b id="threshold">–</b>: promo plays above it</div>
+    <svg class="spark" id="spark" viewBox="0 0 600 110" preserveAspectRatio="none" aria-label="Recent sales"></svg>
+
+    <div class="row">
+      <button class="drop" id="drop">▼ Sales drop</button>
+      <button class="up" id="pickup">▲ Sales pick up</button>
+    </div>
+    <form class="row" id="setForm">
+      <input id="value" type="number" min="0" step="1" aria-label="Sales value" placeholder="e.g. 120">
+      <button type="submit">Set sales</button>
+      <button type="button" id="auto">Auto: off</button>
+      <button type="button" id="reset">Reset</button>
+    </form>
+    <div class="err-toast" id="toast"></div>
+
+    <div class="promo">
+      <span class="badge unknown" id="badge">PROMO ?</span>
+      <div>
+        <div>Media tagged <b id="promoTag">–</b> → screens tagged <b id="screenTag">–</b></div>
+        <div class="meta" id="last">No change yet.</div>
+        <div class="busy" id="busy">Talking to EasySignage…</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="label" style="margin-bottom:8px">API log</div>
+    <div class="log" id="log"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let current = null;
+
+function render(s) {
+  current = s;
+  const above = s.sales > s.threshold;
+  $("sales").textContent = s.sales;
+  $("sales").className = "sales " + (above ? "above" : "below");
+  $("threshold").textContent = s.threshold;
+  $("promoTag").textContent = s.promoTag;
+  $("screenTag").textContent = s.screenTag;
+  const badge = $("badge");
+  badge.textContent = s.promoActive === null ? "PROMO ?" : s.promoActive ? "PROMO ON" : "PROMO OFF";
+  badge.className = "badge " + (s.promoActive === null ? "unknown" : s.promoActive ? "on" : "");
+  $("busy").classList.toggle("show", s.busy);
+  $("auto").textContent = "Auto: " + (s.auto ? "on" : "off");
+  $("auto").classList.toggle("on", s.auto);
+  if (s.lastAction) {
+    const a = s.lastAction;
+    const counts = a.matched !== undefined ? ` · ${a.updated}/${a.matched} items changed` : "";
+    $("last").textContent = `Last: promo ${a.action === "enable" ? "ON" : "OFF"} at ${new Date(a.time).toLocaleTimeString()}${counts} · screens ${a.screens}`;
+  }
+  drawSpark(s);
+}
+
+function drawSpark(s) {
+  const pts = s.history.length ? s.history : [{ sales: s.sales }];
+  const max = Math.max(s.threshold * 2, ...pts.map((p) => p.sales));
+  const W = 600, H = 110, n = Math.max(pts.length - 1, 1);
+  const y = (v) => H - 6 - (v / max) * (H - 12);
+  const line = pts.map((p, i) => `${(i / n) * W},${y(p.sales)}`).join(" ");
+  const ty = y(s.threshold);
+  $("spark").innerHTML =
+    `<line x1="0" x2="${W}" y1="${ty}" y2="${ty}" stroke="#f59e0b" stroke-dasharray="6 6" stroke-width="1.5"/>` +
+    `<polyline points="${line}" fill="none" stroke="#4f8cff" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+}
+
+function addLog(e) {
+  const el = document.createElement("div");
+  el.className = "entry " + e.level;
+  const t = new Date(e.time).toLocaleTimeString();
+  const esc = (v) => String(v).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+  let html = `<span class="t">${t}</span>`;
+  if (e.call) html += `<span class="call">client.${esc(e.call)}</span>`;
+  if (e.durationMs !== undefined) html += ` <span class="ms">${e.durationMs} ms</span>`;
+  if (e.message) html += `${e.call ? "<br>" : ""}<span class="msg">${e.call ? "&nbsp;&nbsp;&nbsp;" : ""}${esc(e.message)}</span>`;
+  for (const r of e.requests ?? []) html += `<div class="req">${esc(r)}</div>`;
+  if (e.result !== undefined && e.result !== null) html += `<div class="res">${esc(JSON.stringify(e.result))}</div>`;
+  el.innerHTML = html;
+  const log = $("log");
+  const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  log.appendChild(el);
+  if (atBottom) log.scrollTop = log.scrollHeight;
+}
+
+async function post(path, body) {
+  $("toast").textContent = "";
+  const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body ?? {}) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) $("toast").textContent = data.error ?? "Request failed";
+}
+
+$("drop").onclick = () => post("/api/sales/drop");
+$("pickup").onclick = () => post("/api/sales/pickup");
+$("reset").onclick = () => post("/api/reset");
+$("auto").onclick = () => post("/api/auto", { on: !current?.auto });
+$("setForm").onsubmit = (ev) => {
+  ev.preventDefault();
+  const v = $("value").value;
+  if (v !== "") post("/api/sales", { value: Number(v) });
+};
+
+const events = new EventSource("/api/events");
+events.addEventListener("state", (m) => render(JSON.parse(m.data)));
+events.addEventListener("log", (m) => addLog(JSON.parse(m.data)));
+events.onopen = () => { $("live").classList.add("live"); $("log").innerHTML = ""; };
+events.onerror = () => $("live").classList.remove("live");
+</script>
+</body>
+</html>
