@@ -232,8 +232,8 @@ the time of day. Choose a tag for the content, a tag for the screens, and a rule
 ## Links
 
 - Blog post: [Automated Digital Signage for Retail: Run Promotions from Live Sales Data](https://easysignage.com/blog/26/sales-driven-promotions-digital-signage/)
-- EasySignage Open API reference: open it from the CMS under **Settings → API Keys**, or go to
-  [api-docs.easysignage.io](https://api-docs.easysignage.io/)
+- Open API overview: [How to Automate Digital Signage with EasySignage Open API](https://easysignage.com/blog/26/digital-signage-api-integration/)
+- Creating an API key: [API Keys help article](https://easysignage.com/help/account-settings/digital-signage-api-keys/). The full API reference opens from the CMS under **Settings → API Keys → Open API Docs**.
 - SDK: [`@easysignage/sdk` on npm](https://www.npmjs.com/package/@easysignage/sdk)
 - Companion demo: [Digital-Signage-Folder-Sync](https://github.com/easysignage/Digital-Signage-Folder-Sync),
   which keeps a playlist in sync with a local folder
