@@ -9,6 +9,8 @@ and the official [`@easysignage/sdk`](https://www.npmjs.com/package/@easysignage
 is the backend here: it stores the content and runs the screens, while your own code decides what
 plays.
 
+> **Blog post:** [Automated Digital Signage for Retail: Run Promotions from Live Sales Data](https://easysignage.com/blog/26/sales-driven-promotions-digital-signage/) explains the use case, who it is for and how to roll it out.
+
 ## What it does
 
 | Sales value | What the app does | API calls |
@@ -229,6 +231,7 @@ the time of day. Choose a tag for the content, a tag for the screens, and a rule
 
 ## Links
 
+- Blog post: [Automated Digital Signage for Retail: Run Promotions from Live Sales Data](https://easysignage.com/blog/26/sales-driven-promotions-digital-signage/)
 - EasySignage Open API reference: open it from the CMS under **Settings → API Keys**, or go to
   [api-docs.easysignage.io](https://api-docs.easysignage.io/)
 - SDK: [`@easysignage/sdk` on npm](https://www.npmjs.com/package/@easysignage/sdk)
