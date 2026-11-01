@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Turn promo content on and off across your screens from a sales number, using the EasySignage Open API.",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=20.12"

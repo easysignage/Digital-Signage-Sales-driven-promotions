@@ -234,3 +234,7 @@ the time of day. Choose a tag for the content, a tag for the screens, and a rule
 - SDK: [`@easysignage/sdk` on npm](https://www.npmjs.com/package/@easysignage/sdk)
 - Companion demo: [Digital-Signage-Folder-Sync](https://github.com/easysignage/Digital-Signage-Folder-Sync),
   which keeps a playlist in sync with a local folder
+
+## License
+
+[MIT](LICENSE)
