@@ -1,8 +1,8 @@
 # Sales-driven promotions for digital signage
 
 Use live business data to decide what plays on your screens. In this demo, a sales figure
-controls a promotion: **when sales are above a threshold the promo plays, and when they fall below
-it the promo is taken off every screen.** No one has to open the CMS.
+controls a promotion: **when sales fall below a threshold the promo plays to help lift them, and when
+they pick up again the promo is taken off every screen.** No one has to open the CMS.
 
 It is a small local Node.js app built on the [EasySignage](https://www.easysignage.com) Open API
 and the official [`@easysignage/sdk`](https://www.npmjs.com/package/@easysignage/sdk). EasySignage
@@ -15,8 +15,8 @@ plays.
 
 | Sales value | What the app does | API calls |
 | --- | --- | --- |
-| Above the threshold (default 100) | Turns the promo **on** | `media.enableByTag("promo")`, then `displays.publishByTag("automation")` |
-| Below the threshold | Turns the promo **off** | `media.disableByTag("promo")`, then `displays.publishByTag("automation")` |
+| Below the threshold (default 100) | Turns the promo **on** | `media.enableByTag("promo")`, then `displays.publishByTag("automation")` |
+| Above the threshold | Turns the promo **off** | `media.disableByTag("promo")`, then `displays.publishByTag("automation")` |
 | Exactly at the threshold, or the promo is already in the right state | Nothing | none |
 
 The demo UI has **Sales drop** / **Sales pick up** buttons, a box to type an exact number, and an
@@ -28,8 +28,8 @@ route behind it and the response, so you can see exactly what happens.
 ```mermaid
 flowchart LR
   A[Sales value<br/>buttons, input or auto mode] --> B{Above or below<br/>the threshold?}
-  B -- above, promo off --> C[media.enableByTag]
-  B -- below, promo on --> D[media.disableByTag]
+  B -- below, promo is off --> C[media.enableByTag]
+  B -- above, promo is on --> D[media.disableByTag]
   B -- no change needed --> E[No API call]
   C --> F[displays.publishByTag]
   D --> F
@@ -59,7 +59,7 @@ async function setPromo(on: boolean) {
 
 The rest of the app handles the details that matter in real use:
 
-- **It only calls the API when the state actually changes.** Going from 150 to 160 makes no calls.
+- **It only calls the API when the state actually changes.** Going from 60 to 50 makes no calls.
 - **Calls run one at a time.** Clicking quickly can never send an enable and a disable out of order.
 - **It reports problems clearly**, such as when no media carries the promo tag or no screen carries
   the screen tag (see [Troubleshooting](#troubleshooting)).
@@ -137,8 +137,8 @@ Open **http://localhost:3000**.
 
 | Control | What it does |
 | --- | --- |
-| **▲ Sales pick up** | Sets sales to 140% of the threshold, which turns the promo on |
-| **▼ Sales drop** | Sets sales to 60% of the threshold, which turns the promo off |
+| **▼ Sales drop** | Sets sales to 60% of the threshold, which turns the promo on |
+| **▲ Sales pick up** | Sets sales to 140% of the threshold, which turns the promo off |
 | **Set sales** | Applies the exact number you type |
 | **Auto** | Moves sales up and down every 4 seconds, crossing the threshold in both directions |
 | **Reset** | Turns the promo off, publishes and puts sales back at the threshold |
@@ -157,7 +157,7 @@ All settings live in `.env`. See [`.env.example`](.env.example).
 | `EASYSIGNAGE_BASE_URL` | `https://api.easysignage.io` | Only for white-label accounts that use their own API host |
 | `PROMO_TAG` | `promo` | Media with this tag is switched on and off |
 | `SCREEN_TAG` | `automation` | Screens with this tag are published after each change |
-| `THRESHOLD` | `100` | Sales above this value turn the promo on; below it turn the promo off |
+| `THRESHOLD` | `100` | Sales below this value turn the promo on; above it turn the promo off |
 | `PORT` | `3000` | Port for the local web UI |
 
 Tags are stored in lower case by EasySignage, so the app lower-cases them for you.

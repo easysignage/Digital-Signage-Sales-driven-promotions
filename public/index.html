@@ -22,7 +22,7 @@
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
   .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
   .sales { font-size: 88px; font-weight: 700; line-height: 1; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
-  .sales.above { color: var(--on); } .sales.below { color: var(--text); }
+  .sales.promo { color: var(--on); } .sales.normal { color: var(--text); }
   .threshold { color: var(--muted); }
   svg.spark { width: 100%; height: 110px; margin: 14px 0 6px; display: block; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
@@ -61,7 +61,7 @@
   <section class="panel">
     <div class="label">Sales this hour</div>
     <div class="sales" id="sales">–</div>
-    <div class="threshold">Threshold <b id="threshold">–</b>: promo plays above it</div>
+    <div class="threshold">Threshold <b id="threshold">–</b>: promo plays below it</div>
     <svg class="spark" id="spark" viewBox="0 0 600 110" preserveAspectRatio="none" aria-label="Recent sales"></svg>
 
     <div class="row">
@@ -98,9 +98,9 @@ let current = null;
 
 function render(s) {
   current = s;
-  const above = s.sales > s.threshold;
+  const promoZone = s.sales < s.threshold;
   $("sales").textContent = s.sales;
-  $("sales").className = "sales " + (above ? "above" : "below");
+  $("sales").className = "sales " + (promoZone ? "promo" : "normal");
   $("threshold").textContent = s.threshold;
   $("promoTag").textContent = s.promoTag;
   $("screenTag").textContent = s.screenTag;

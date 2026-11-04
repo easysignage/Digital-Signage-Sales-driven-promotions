@@ -1,4 +1,4 @@
-// The rule: sales above the threshold turn the promo on, below it turn the promo off.
+// The rule: sales below the threshold turn the promo on to help lift them; above it, the promo is turned off.
 // Each change is two API calls: switch the tagged media, then publish the tagged screens.
 import { call, client, codeOf } from "./easysignage.ts";
 import { config } from "./config.ts";
@@ -67,7 +67,7 @@ async function evaluate(): Promise<void> {
     log("info", `Sales ${sales}: no change (${why}).`);
     return;
   }
-  log("info", `Sales ${sales} is ${action === "enable" ? "above" : "below"} ${threshold}: turning promo ${action === "enable" ? "ON" : "OFF"}.`);
+  log("info", `Sales ${sales} is ${action === "enable" ? "below" : "above"} ${threshold}: turning promo ${action === "enable" ? "ON" : "OFF"}.`);
   await apply(action);
 }
 
